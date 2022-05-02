@@ -28,10 +28,6 @@ async function main() {
             await page.waitForSelector('.SALvLe') // Adress Bilgilerini Bekle
             var title = await getTitle(page)
             var detail = await page.$$(detailPath).catch(() => { return undefined }) // Detay İçine Gir
-
-
-
-
             var data = await getDatas(detail[0])
             if (data != undefined) { await page.waitForTimeout(1500); await bodyParse(data, title) }
             else { console.log(undefined) }
@@ -80,7 +76,7 @@ async function bodyParse(data, titleData) {
 async function saveExcell() {
 
 
-    var writeStream =await fs.createWriteStream('business.xls')
+    var writeStream = await fs.createWriteStream('business.xls')
     const header = "title \t adress \t page \t phone \t time \n"
     await writeStream.write(header)
     await allBusiness.forEach((perBusiness) => {
