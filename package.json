@@ -1,0 +1,23 @@
+{
+  "name": "getbusiness",
+  "version": "1.0.0",
+  "description": "---Begin---",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DogukanGezer/GoogleBusinessBot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DogukanGezer/GoogleBusinessBot/issues"
+  },
+  "homepage": "https://github.com/DogukanGezer/GoogleBusinessBot#readme",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "puppeteer": "^13.7.0"
+  }
+}
