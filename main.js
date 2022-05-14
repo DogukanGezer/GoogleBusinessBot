@@ -12,7 +12,7 @@ const buttonSelector = 'div > div > a.C8TUKc.rllt__link.a-no-hover-decoration'
 const detailPath = 'div.ifM9O'
 const closeSelector = '#rhs > div > div.h2yBfgNjGpc__inline-item-view > div'
 
-var allBusiness = [];
+var allBusiness = []
 
 
 async function main() {
