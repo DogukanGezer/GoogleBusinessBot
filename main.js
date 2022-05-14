@@ -29,18 +29,8 @@ async function main() {
         for (const perBusiness of business) {
             var id = await perBusiness.$eval('div', e => e.parentNode.id + e.parentNode.className)
             await openDetail(perBusiness)
-<<<<<<< HEAD
-            await page.waitForSelector('.SALvLe') // Adress Bilgilerini Bekle
-            var title = await getTitle(page)
-            var detail = await page.$$(detailPath).catch(() => { return undefined }) // Detay İçine Gir
-            var data = await getDatas(detail[0])
-            if (data != undefined) { await page.waitForTimeout(1500); await bodyParse(data, title) }
-            else { console.log(undefined) }
-
-=======
             await page.waitForTimeout(1500) // Adress Bilgilerini Bekle
             await setDatas(page)
->>>>>>> HEAD@{7}
         }
         saveXlsx(input)
         var nextButton = await page.$eval('#pnnext', e => { return e.innerText }).catch(() => { return null })
@@ -74,14 +64,6 @@ async function setDatas(page) {
 
 
 
-<<<<<<< HEAD
-    var writeStream = await fs.createWriteStream('business.xls')
-    const header = "title \t adress \t page \t phone \t time \n"
-    await writeStream.write(header)
-    await allBusiness.forEach((perBusiness) => {
-        var row = perBusiness.title + "\t" + perBusiness.adress + "\t" + perBusiness.page + "\t" + perBusiness.phone + "\t" + perBusiness.time + "\n";
-        writeStream.write(row)
-=======
 async function saveXlsx(input) {
     const fileName = input.split(' ').join('_') + '.xlsx'
     const wb = await new excel.Workbook()
@@ -101,7 +83,6 @@ async function saveXlsx(input) {
             fgColor: { argb: '96C8FB' },
             bgColor: { argb: '96C8FB' }
         };
->>>>>>> HEAD@{7}
     })
     await wb.xlsx.writeFile('./Datas/' + fileName);
 }
