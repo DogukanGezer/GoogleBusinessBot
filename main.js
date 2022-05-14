@@ -1,9 +1,11 @@
 const puppeteer = require('puppeteer');
 const business = require('./business');
-const puppeteerConfig = { headless: false }
+const puppeteerConfig = { headless: true }
 const businessModel = require('./business')
-const fs = require('fs')
-const url = 'https://www.google.com/search?q=uppsala+hair+salon&biw=800&bih=600&sz=0&tbm=lcl&ei=qjhsYqSTD6uRxc8P8sCr8AY&oq=uppsala+hair+salon&gs_l=psy-ab.3...0.0.0.8940.0.0.0.0.0.0.0.0..0.0....0...1c..64.psy-ab..0.0.0....0.kC5p5PUQ9Ns#rlfi=hd:;si:;mv:[[59.870175599999996,17.6746479],[59.8491153,17.6138911]];tbs:lrf:!1m4!1u3!2m2!3m1!1e1!1m4!1u2!2m2!2m1!1e1!2m1!1e2!2m1!1e3!3sIAE,lf:1,lf_ui:14'
+const excel = require('exceljs')
+const prompt = require('prompt-sync')({ sigint: false })
+
+var url = 'https://www.google.com/search?tbm=lcl&q='
 const bussinessSelector = '#rl_ist0 > div > div.rl_tile-group > div.rlfl__tls.rl_tls > div'
 const titleSelector = '.SPZz6b'
 const buttonSelector = 'div > div > a.C8TUKc.rllt__link.a-no-hover-decoration'
@@ -14,17 +16,20 @@ var allBusiness = []
 
 
 async function main() {
-
+    const input = prompt('Sayfa Adı Giriniz : ')
+    url += encodeURIComponent(input) //prompt
     const browser = await puppeteer.launch(puppeteerConfig)
     var page = await browser.newPage()
     await page.goto(url)
-    var business = await page.$$(bussinessSelector)
-    await page.waitForSelector(bussinessSelector)
-    for (var perpage = 0; perpage < 1; perpage++) {
-
+    console.log('işlem 3 saniye sonra başlayacak')
+    while (true) {
+        await page.waitForTimeout(3000)
+        var business = await page.$$(bussinessSelector)
+        await page.waitForTimeout(1500)
         for (const perBusiness of business) {
-
+            var id = await perBusiness.$eval('div', e => e.parentNode.id + e.parentNode.className)
             await openDetail(perBusiness)
+<<<<<<< HEAD
             await page.waitForSelector('.SALvLe') // Adress Bilgilerini Bekle
             var title = await getTitle(page)
             var detail = await page.$$(detailPath).catch(() => { return undefined }) // Detay İçine Gir
@@ -32,64 +37,73 @@ async function main() {
             if (data != undefined) { await page.waitForTimeout(1500); await bodyParse(data, title) }
             else { console.log(undefined) }
 
+=======
+            await page.waitForTimeout(1500) // Adress Bilgilerini Bekle
+            await setDatas(page)
+>>>>>>> HEAD@{7}
         }
-        saveExcell()
+        saveXlsx(input)
+        var nextButton = await page.$eval('#pnnext', e => { return e.innerText }).catch(() => { return null })
+        if (nextButton == null) { console.log('İşlem Tamamlandı'); break; }
         await page.$eval('#pnnext', async (element) => { element.click(); })
-        await page.waitForTimeout(3000);
+        console.log('Diğer Sayfaya Geçiliyor')
+        await page.waitForNavigation({ waitUntil: 'networkidle2' })
+
     }
-
-
-
 
 }
 
-async function getTitle(page) {
-    var titleData = await page.$$(titleSelector).catch(() => { return undefined })
-    if (titleData != undefined) {
-        var title = await titleData[0].$eval('.SPZz6b > h2', element => element.innerText).catch(() => { return undefined })
-        var url = await titleData[0].$eval('.QqG1Sd > a', element => element.href).catch(() => { return undefined })
-        var titleJson = await { title: title, url: url }
-        return titleJson
-    }
-    return { title: undefined, url: undefined }
-}
+
 
 async function openDetail(perBusiness) {
-    var button = await perBusiness.$eval(buttonSelector, async (element) => { element.click() }).catch(() => { }) //Detay Aç
+    await perBusiness.$eval(buttonSelector, async (element) => { element.click() }).catch(() => { }) //Detay Aç
 }
 
-async function getDatas(detail) {
-    var data = await detail.$eval('.SALvLe', element => element.innerText).catch(() => { return undefined })//Selector Sıkıntı
-    return data
-}
 
-async function bodyParse(data, titleData) {
-    data += "\n"
-    const adres = data.split(new RegExp('(?<=Adres:)(.*)(?=\n)'))[1]
-    const phone = data.split(new RegExp('(?<=Telefon:)(.*)(?=\n)'))[1]
-    const time = data.split(new RegExp('(?<=Kapanış saati:)(.*)(?=\n)'))[1]
-    var business = await new businessModel(titleData.title, adres, titleData.url, phone, time).getJson()
+async function setDatas(page) {
+    const title = await page.$eval('.qrShPb', (e) => e.innerText).catch(() => { return undefined })
+    const phone = await page.$eval('.kno-fv', (e) => e.innerText).catch(() => { return undefined })
+    const pageUrl = await page.$eval('.QqG1Sd > a', (e) => { return e.href }).catch(() => { return undefined })
+    const adress = await page.$eval('.LrzXr ', (e) => { return e.innerText }).catch(() => { return undefined })
+    const time = await page.$eval('.WgFkxc ', (e) => { return e.innerText }).catch(() => { return undefined })
+    const business = await new businessModel(title, adress, pageUrl, phone, time)
+    console.log(business)
     allBusiness.push(business)
 }
 
 
-async function saveExcell() {
 
 
+<<<<<<< HEAD
     var writeStream = await fs.createWriteStream('business.xls')
     const header = "title \t adress \t page \t phone \t time \n"
     await writeStream.write(header)
     await allBusiness.forEach((perBusiness) => {
         var row = perBusiness.title + "\t" + perBusiness.adress + "\t" + perBusiness.page + "\t" + perBusiness.phone + "\t" + perBusiness.time + "\n";
         writeStream.write(row)
+=======
+async function saveXlsx(input) {
+    const fileName = input.split(' ').join('_') + '.xlsx'
+    const wb = await new excel.Workbook()
+    const ws = await wb.addWorksheet('Business List');
+    ws.columns = await [
+        { header: 'Title', key: 'Title' },
+        { header: 'Adress', key: 'Adress' },
+        { header: 'Page', key: 'Page' },
+        { header: 'Phone', key: 'Phone' },
+        { header: 'Time', key: 'Time' }
+    ];
+    await allBusiness.forEach((x) => {
+        var row = ws.addRow({ Title: x.title, Adress: x.adress, Page: x.webPage, Phone: x.phone, Time: x.time });
+        row.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '96C8FB' },
+            bgColor: { argb: '96C8FB' }
+        };
+>>>>>>> HEAD@{7}
     })
-    writeStream.close()
-
-
-
+    await wb.xlsx.writeFile('./Datas/' + fileName);
 }
-
-
-
 
 main()
